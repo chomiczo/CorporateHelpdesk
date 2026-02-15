@@ -8,6 +8,8 @@ services:
       - MSSQL_SA_PASSWORD=SuperMocneHaslo123!
     ports:
       - "1435:1433" # Port 1435
+    volumes:
+      - helpdesk_data:/var/opt/mssql  # <--- TA LINIA JEST KLUCZOWA
 
   helpdesk-app:
     image: helpdesk-app
