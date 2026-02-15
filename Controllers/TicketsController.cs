@@ -58,18 +58,15 @@ namespace CorporateHelpdesk.Controllers
         // GET: Tickets/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
+            // .Include, żeby pobrać zgłoszenie RAZEM z jego komentarzami i ich autorami
             var ticket = await _context.Ticket
-                .Include(t => t.Owner)
+                .Include(t => t.Comments)
+                    .ThenInclude(c => c.Author)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (ticket == null)
-            {
-                return NotFound();
-            }
+
+            if (ticket == null) return NotFound();
 
             return View(ticket);
         }
@@ -192,6 +189,39 @@ namespace CorporateHelpdesk.Controllers
         private bool TicketExists(int id)
         {
             return _context.Ticket.Any(e => e.Id == id);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeStatus(int id, string newStatus)
+        {
+            var ticket = await _context.Ticket.FindAsync(id);
+            if (ticket != null)
+            {
+                ticket.Status = newStatus;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Details), new { id = id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddComment(int ticketId, string commentText)
+        {
+            if (!string.IsNullOrEmpty(commentText))
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var comment = new Comment
+                {
+                    TicketId = ticketId,
+                    Text = commentText,
+                    AuthorId = user.Id,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.Comments.Add(comment);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Details", new { id = ticketId });
         }
     }
 }
