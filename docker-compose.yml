@@ -1,0 +1,24 @@
+version: '3.4'
+
+services:
+  helpdesk-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SuperMocneHaslo123!
+    ports:
+      - "1435:1433" # Port 1435
+
+  helpdesk-app:
+    image: helpdesk-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8080" # Port 8085
+    depends_on:
+      - helpdesk-db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Nazwa serwera "helpdesk-db" (tak jak nazwa usługi wyżej)
+      - ConnectionStrings__DefaultConnection=Server=helpdesk-db;Database=HelpDeskDb;User Id=sa;Password=SuperMocneHaslo123!;TrustServerCertificate=True
