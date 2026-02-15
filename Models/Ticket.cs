@@ -25,5 +25,7 @@ namespace CorporateHelpdesk.Models
         // To połączy zgłoszenie z kontem osoby, która jest zalogowana
         public string? OwnerId { get; set; }
         public IdentityUser? Owner { get; set; }
+
+        public List<Comment> Comments { get; set; } = new List<Comment>();
     }
 }
