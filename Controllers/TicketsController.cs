@@ -8,15 +8,22 @@ using Microsoft.EntityFrameworkCore;
 using CorporateHelpdesk.Data;
 using CorporateHelpdesk.Models;
 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+
 namespace CorporateHelpdesk.Controllers
 {
+    [Authorize] // tylko zalogowani widzą ten kontroler
     public class TicketsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager; // <--- dodanie user managera w celu identyfikacji tożsamości
 
-        public TicketsController(ApplicationDbContext context)
+        // Wstrzyknięcie bazy i managera użytkowników
+        public TicketsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Tickets
@@ -59,14 +66,18 @@ namespace CorporateHelpdesk.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Description,CreatedAt,Status,OwnerId")] Ticket ticket)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(ticket);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id", ticket.OwnerId);
-            return View(ticket);
+            // 1. Pobierz ID aktualnie zalogowanego użytkownika
+            var user = await _userManager.GetUserAsync(User);
+
+            // 2. Ustaw brakujące dane automatycznie
+            ticket.OwnerId = user.Id;           // Przypisz autora
+            ticket.CreatedAt = DateTime.Now;    // Ustaw datę na "teraz"
+            ticket.Status = "Nowe";             // Domyślny status
+
+            // 3. Zapisz w bazie 
+            _context.Add(ticket);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Tickets/Edit/5
