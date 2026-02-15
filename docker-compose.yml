@@ -9,7 +9,7 @@ services:
     ports:
       - "1435:1433" # Port 1435
     volumes:
-      - helpdesk_data:/var/opt/mssql  # <--- TA LINIA JEST KLUCZOWA
+      - helpdesk_data:/var/opt/mssql # To łączy bazę z naszym trwałym schowkiem
 
   helpdesk-app:
     image: helpdesk-app
@@ -22,5 +22,8 @@ services:
       - helpdesk-db
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      # Nazwa serwera "helpdesk-db" (tak jak nazwa usługi wyżej)
       - ConnectionStrings__DefaultConnection=Server=helpdesk-db;Database=HelpDeskDb;User Id=sa;Password=SuperMocneHaslo123!;TrustServerCertificate=True
+
+# SEKCJA DEFINIUJE SCHOWEK (VOLUME) - MUSI BYĆ NA SAMYM DOLE 
+volumes:
+  helpdesk_data:
