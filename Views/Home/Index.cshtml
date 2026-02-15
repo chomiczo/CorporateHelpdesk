@@ -1,8 +1,42 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Strona Główna";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
+        <div class="container-fluid py-5 text-center">
+            <h1 class="display-5 fw-bold">🏢 Corporate Helpdesk System</h1>
+            <p class="col-md-12 fs-4 text-muted">Zarządzaj zgłoszeniami technicznymi i komunikacją wewnątrz firmy w jednym miejscu.</p>
+            <hr class="my-4">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a asp-controller="Tickets" asp-action="Index" class="btn btn-primary btn-lg px-4 me-md-2">
+                    <i class="bi bi-list-ul"></i> Przejdź do zgłoszeń
+                </a>
+                <a asp-controller="Tickets" asp-action="Create" class="btn btn-outline-success btn-lg px-4">
+                    <i class="bi bi-plus-circle"></i> Dodaj nowe zgłoszenie
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row align-items-md-stretch">
+        <div class="col-md-4">
+            <div class="h-100 p-4 border rounded-3 bg-white shadow-sm">
+                <h2>🚀 Szybkość</h2>
+                <p>System działa w oparciu o Docker i Jenkins, zapewniając błyskawiczne wdrażanie poprawek i stabilność środowiska.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="h-100 p-4 border rounded-3 bg-white shadow-sm">
+                <h2>🔒 Bezpieczeństwo</h2>
+                <p>Pełna izolacja danych użytkowników oraz dedykowany panel dla administratora (widok admin@admin.com).</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="h-100 p-4 border rounded-3 bg-white shadow-sm">
+                <h2>💬 Komunikacja</h2>
+                <p>Wbudowany system komentarzy pozwala na płynną wymianę informacji między zgłaszającym a działem IT.</p>
+            </div>
+        </div>
+    </div>
 </div>
