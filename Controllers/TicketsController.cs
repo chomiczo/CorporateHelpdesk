@@ -29,8 +29,30 @@ namespace CorporateHelpdesk.Controllers
         // GET: Tickets
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Ticket.Include(t => t.Owner);
-            return View(await applicationDbContext.ToListAsync());
+            // 1. Pobieramy aktualnie zalogowanego użytkownika
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Challenge(); // Jeśli niezalogowany, wykop do logowania
+            }
+
+            // 2. Sprawdzamy, czy to Admin (PROSTY SPOSÓB: po mailu)
+            // Wpisz tu SWÓJ email, którego używasz do testów!
+            if (user.Email == "admin@admin.com")
+            {
+                // Admin widzi WSZYSTKIE zgłoszenia
+                var allTickets = await _context.Ticket.ToListAsync();
+                return View(allTickets);
+            }
+            else
+            {
+                // Zwykły user widzi TYLKO SWOJE (filtrujemy po OwnerId)
+                var myTickets = await _context.Ticket
+                    .Where(t => t.OwnerId == user.Id)
+                    .ToListAsync();
+                return View(myTickets);
+            }
         }
 
         // GET: Tickets/Details/5
