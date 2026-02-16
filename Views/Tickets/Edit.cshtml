@@ -1,54 +1,50 @@
 ﻿@model CorporateHelpdesk.Models.Ticket
 
-@{
-    ViewData["Title"] = "Edit";
-}
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <h4 class="mb-0 fw-bold">✏️ Edytuj zgłoszenie: @Model.Title</h4>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Edit">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="OwnerId" />
+                <input type="hidden" asp-for="CreatedAt" />
 
-<h1>Edit</h1>
+                <div class="form-group mb-3">
+                    <label class="fw-bold mb-1">Temat zgłoszenia</label>
+                    <input asp-for="Title" class="form-control" />
+                </div>
 
-<h4>Ticket</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Status" class="control-label"></label>
-                <input asp-for="Status" class="form-control" />
-                <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="OwnerId" class="control-label"></label>
-                <select asp-for="OwnerId" class="form-control" asp-items="ViewBag.OwnerId"></select>
-                <span asp-validation-for="OwnerId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold mb-1">Priorytet</label>
+                        <select asp-for="Priority" class="form-select">
+                            <option value="Niski">Niski</option>
+                            <option value="Średni">Średni</option>
+                            <option value="Wysoki">Wysoki</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold mb-1">Status</label>
+                        <select asp-for="Status" class="form-select border-primary">
+                            <option value="Nowe">Nowe</option>
+                            <option value="W toku">W toku</option>
+                            <option value="Zamknięte">Zamknięte</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="fw-bold mb-1">Opis problemu</label>
+                    <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary px-4">Zapisz zmiany</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Powrót do listy</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

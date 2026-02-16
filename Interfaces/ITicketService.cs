@@ -14,5 +14,7 @@ namespace CorporateHelpdesk.Interfaces
         Task UpdateTicketAsync(Ticket ticket);
         Task DeleteTicketAsync(int id);
         Task<bool> TicketExistsAsync(int id);
+
+        Task<Dictionary<string, int>> GetTicketStatsAsync(string userId, bool isAdmin);
     }
 }

@@ -1,0 +1,30 @@
+﻿@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
+
+<div class="container mt-4">
+    <h2>👥 Zarządzanie Użytkownikami</h2>
+    <div class="card shadow-sm border-0 mt-3">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>ID</th>
+                    <th class="text-center">Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td><strong>@user.Email</strong></td>
+                        <td class="text-muted small">@user.Id</td>
+                        <td class="text-center">
+                            <a asp-action="ManageRoles" asp-route-userId="@user.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-shield-lock"></i> Uprawnienia
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

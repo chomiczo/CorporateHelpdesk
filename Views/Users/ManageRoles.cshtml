@@ -1,0 +1,54 @@
+﻿@model List<string>
+
+<div class="container mt-5">
+    <div class="card shadow border-0" style="max-width: 600px; margin: 0 auto;">
+        <div class="card-header bg-primary text-white py-3">
+            <h4 class="mb-0"><i class="bi bi-shield-lock"></i> Zarządzaj uprawnieniami</h4>
+        </div>
+        <div class="card-body p-4">
+            <p class="text-muted mb-4">
+                Użytkownik: <strong>@ViewBag.UserName</strong><br />
+                ID: <small>@ViewBag.UserId</small>
+            </p>
+
+            <h5 class="mb-3">Dostępne role:</h5>
+            <div class="d-grid gap-2">
+                @foreach (var role in Model)
+                {
+                    bool hasRole = ((IList<string>)ViewBag.UserRoles).Contains(role);
+
+                    <div class="d-flex align-items-center justify-content-between p-3 border rounded mb-2">
+                        <span class="fw-bold fs-5">
+                            <i class="bi bi-person-badge me-2"></i> @role
+                        </span>
+
+                        <form asp-action="UpdateRole" method="post" class="d-inline">
+                            <input type="hidden" name="userId" value="@ViewBag.UserId" />
+                            <input type="hidden" name="roleName" value="@role" />
+
+                            @* Logika: Jeśli MA rolę, to chcemy ją ODEBRAĆ (addRole = false). Jeśli NIE MA, to DODAĆ (addRole = true) *@
+                            <input type="hidden" name="addRole" value="@(hasRole ? "false" : "true")" />
+
+                            @if (hasRole)
+                            {
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="bi bi-check-circle-fill"></i> Posiada
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-outline-secondary px-4">
+                                    Nadaj rolę
+                                </button>
+                            }
+                        </form>
+                    </div>
+                }
+            </div>
+
+            <div class="mt-4 text-center">
+                <a asp-action="Index" class="btn btn-link text-decoration-none">← Wróć do listy użytkowników</a>
+            </div>
+        </div>
+    </div>
+</div>

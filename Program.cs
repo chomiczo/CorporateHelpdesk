@@ -46,23 +46,23 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
-// --- POCZ¥TEK SEKCJI DOCKERA ---
-// To sprawi, ¿e aplikacja sama stworzy bazê danych przy starcie kontenera
+// --- POCZï¿½TEK SEKCJI DOCKERA ---
+// To sprawi, ï¿½e aplikacja sama stworzy bazï¿½ danych przy starcie kontenera
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        // Pobieramy Twój kontekst bazy
+        // Pobieramy Twï¿½j kontekst bazy
         var context = services.GetRequiredService<CorporateHelpdesk.Data.ApplicationDbContext>();
 
-        // Magiczna komenda: jeœli bazy nie ma -> stwórz j¹. Jeœli s¹ zmiany -> zaktualizuj.
+        // Magiczna komenda: jeï¿½li bazy nie ma -> stwï¿½rz jï¿½. Jeï¿½li sï¿½ zmiany -> zaktualizuj.
         context.Database.Migrate();
-        Console.WriteLine("--> Migracja bazy danych zakoñczona sukcesem!");
+        Console.WriteLine("--> Migracja bazy danych zakoï¿½czona sukcesem!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"--> B³¹d migracji: {ex.Message}");
+        Console.WriteLine($"--> Bï¿½ï¿½d migracji: {ex.Message}");
     }
 }
 

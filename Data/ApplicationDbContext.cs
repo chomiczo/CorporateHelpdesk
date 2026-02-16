@@ -12,5 +12,7 @@ namespace CorporateHelpdesk.Data
         }
         public DbSet<CorporateHelpdesk.Models.Ticket> Ticket { get; set; } = default!;
         public DbSet<Comment> Comments { get; set; } = default!;
+
+        public DbSet<SystemSettings> Settings { get; set; } =  default!;
     }
 }

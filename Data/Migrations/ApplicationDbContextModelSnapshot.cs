@@ -52,6 +52,33 @@ namespace CorporateHelpdesk.Data.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("CorporateHelpdesk.Models.SystemSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DefaultPriority")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EnableComments")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxTicketsPerUser")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OrganizationName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Settings");
+                });
+
             modelBuilder.Entity("CorporateHelpdesk.Models.Ticket", b =>
                 {
                     b.Property<int>("Id")
@@ -69,6 +96,10 @@ namespace CorporateHelpdesk.Data.Migrations
 
                     b.Property<string>("OwnerId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
                         .IsRequired()

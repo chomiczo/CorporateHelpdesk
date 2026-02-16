@@ -1,30 +1,35 @@
 ﻿@model CorporateHelpdesk.Models.Ticket
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Nowe zgłoszenie";
 }
 
-<form asp-action="Create">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+        <form asp-action="Create">
+            <div class="form-group mb-3">
+                <label class="fw-bold mb-1">Temat zgłoszenia</label>
+                <input asp-for="Title" class="form-control form-control-lg" placeholder="Np. Nie działa drukarka" />
+            </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="Title" class="control-label"></label>
-        <input asp-for="Title" class="form-control" placeholder="Np. Nie działa drukarka" />
-        <span asp-validation-for="Title" class="text-danger"></span>
+            <div class="form-group mb-3">
+                <label class="fw-bold mb-1">Priorytet</label>
+                <select asp-for="Priority" class="form-select">
+                    <option value="Niski">Niski</option>
+                    <option value="Średni" selected>Średni</option>
+                    <option value="Wysoki">Wysoki</option>
+                </select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="fw-bold mb-1">Opis problemu</label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary px-4">Wyślij zgłoszenie</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Powrót</a>
+            </div>
+        </form>
     </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Description" class="control-label"></label>
-        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <input type="submit" value="Wyślij zgłoszenie" class="btn btn-primary" />
-        <a asp-action="Index" class="btn btn-secondary">Powrót</a>
-    </div>
-</form>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+</div>

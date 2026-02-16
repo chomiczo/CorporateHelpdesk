@@ -5,56 +5,73 @@
 }
 
 <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>📨 Centrum Zgłoszeń</h1>
-        <a asp-action="Create" class="btn btn-success">
-            <i class="bi bi-plus-circle"></i> + Nowe Zgłoszenie
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold text-dark">📨 Centrum Zgłoszeń</h1>
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-circle"></i> Nowe Zgłoszenie
         </a>
     </div>
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm border-0">
         <div class="card-body">
-            <table class="table" id="ticketsTable">
+            <table class="table table-hover align-middle" id="ticketsTable">
                 <thead class="table-light">
                     <tr>
-                        <th>Temat</th>
-                        <th>Data</th>
-                        <th>Status</th>
-                        <th>Akcje</th>
+                        <th class="py-3">Temat</th>
+                        <th class="py-3">Data utworzenia</th>
+                        <th class="py-3">Priorytet</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3 text-center">Akcje</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
                         <tr>
-                            <td style="font-weight: 500;">
-                                @Html.DisplayFor(modelItem => item.Title)
-                                <br />
-                                <small class="text-muted">
-                                    @(string.IsNullOrEmpty(item.Description) ? "" : (item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description))
+                            <td>
+                                <div class="fw-bold text-primary">@Html.DisplayFor(modelItem => item.Title)</div>
+                                <small class="text-muted d-block text-truncate" style="max-width: 300px;">
+                                    @(string.IsNullOrEmpty(item.Description) ? "Brak opisu" : (item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description))
                                 </small>
                             </td>
-                            <td>
+                            <td class="text-muted" style="font-size: 0.9rem;">
                                 @item.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                            </td>
+                            <td>
+                                @* Kolorowe odznaki dla priorytetów *@
+                                @if (item.Priority == "Wysoki")
+                                {
+                                    <span class="badge bg-danger"><i class="bi bi-fire me-1"></i> Wysoki</span>
+                                }
+                                else if (item.Priority == "Średni")
+                                {
+                                    <span class="badge bg-info text-dark">Średni</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Niski</span>
+                                }
                             </td>
                             <td>
                                 @if (item.Status == "Nowe")
                                 {
-                                    <span class="badge bg-primary">Nowe</span>
+                                    <span class="badge rounded-pill bg-primary px-3">Nowe</span>
                                 }
                                 else if (item.Status == "W toku")
                                 {
-                                    <span class="badge bg-warning text-dark">W toku</span>
+                                    <span class="badge rounded-pill bg-warning text-dark px-3">W toku</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary">Zamknięte</span>
+                                    <span class="badge rounded-pill bg-secondary px-3">Zamknięte</span>
                                 }
                             </td>
-                            <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edytuj</a>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">Szczegóły</a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Usuń</a>
+                            <td class="text-center">
+                                <div class="btn-group shadow-sm">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-white border"><i class="bi bi-pencil text-primary"></i></a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-white border"><i class="bi bi-eye text-info"></i></a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-white border"><i class="bi bi-trash text-danger"></i></a>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -73,7 +90,8 @@
             $('#ticketsTable').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/pl.json'
-                }
+                },
+                order: [[2, 'desc']] //domyślne sortowanie (np. po dacie lub priorytecie)
             });
         });
     </script>

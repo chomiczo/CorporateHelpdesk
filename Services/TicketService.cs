@@ -63,5 +63,24 @@ namespace CorporateHelpdesk.Services
         {
             return await _context.Ticket.AnyAsync(e => e.Id == id);
         }
+
+        public async Task<Dictionary<string, int>> GetTicketStatsAsync(string userId, bool isAdmin)
+        {
+            var query = _context.Ticket.AsQueryable();
+
+            // Jeśli nie jest adminem, filtrujemy po jego ID
+            if (!isAdmin)
+            {
+                query = query.Where(t => t.OwnerId == userId);
+            }
+
+            return new Dictionary<string, int>
+            {
+                { "Wszystkie", await query.CountAsync() },
+                { "Nowe", await query.CountAsync(t => t.Status == "Nowe") },
+                { "W toku", await query.CountAsync(t => t.Status == "W toku") },
+                { "Zamknięte", await query.CountAsync(t => t.Status == "Zamknięte") }
+            };
+        }
     }
 }

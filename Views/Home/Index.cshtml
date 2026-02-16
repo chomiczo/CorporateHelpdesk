@@ -1,42 +1,125 @@
 ﻿@{
-    ViewData["Title"] = "Strona Główna";
+    ViewData["Title"] = "Dashboard";
+
+
+    // 1. Bezpieczne rzutowanie
+    var stats = ViewBag.Stats as Dictionary<string, int> ?? new Dictionary<string, int>();
+
+
+    // 2. Funkcja pomocnicza - szuka klucza, który ZAWIERA daną frazę (np. "toku")
+    // To naprawia problem spacji ("W toku ") i wielkości liter
+    int GetSafeCount(string partialPhrase)
+    {
+        var key = stats.Keys.FirstOrDefault(k => k.ToString().ToLower().Contains(partialPhrase.ToLower()));
+        return key != null ? stats[key] : 0;
+    }
+
+    // 3. Pobieranie danych "po frazie"
+    var countNew = GetSafeCount("Nowe");       // Złapie "Nowe", "nowe "
+    var countInProgress = GetSafeCount("toku"); // Złapie "W toku", "w toku ", "W Toku"
+    var countClosed = GetSafeCount("Zamkni");   // Złapie "Zamknięte", "zamkniete"
 }
 
-<div class="container mt-5">
-    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
-        <div class="container-fluid py-5 text-center">
-            <h1 class="display-5 fw-bold">🏢 Corporate Helpdesk System</h1>
-            <p class="col-md-12 fs-4 text-muted">Zarządzaj zgłoszeniami technicznymi i komunikacją wewnątrz firmy w jednym miejscu.</p>
-            <hr class="my-4">
-            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                <a asp-controller="Tickets" asp-action="Index" class="btn btn-primary btn-lg px-4 me-md-2">
-                    <i class="bi bi-list-ul"></i> Przejdź do zgłoszeń
-                </a>
-                <a asp-controller="Tickets" asp-action="Create" class="btn btn-outline-success btn-lg px-4">
-                    <i class="bi bi-plus-circle"></i> Dodaj nowe zgłoszenie
-                </a>
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold">Dashboard</h1>
+    <p class="lead">Witaj w systemie Corporate Helpdesk</p>
+</div>
+
+@if (ViewBag.Stats != null)
+{
+    <div class="row mt-4 justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-pie-chart-fill text-primary"></i> Statystyki Zgłoszeń</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mt-4 mt-md-0">
+            <div class="list-group shadow-sm">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-star-fill text-primary me-2"></i> Nowe</span>
+                    <span class="badge bg-primary rounded-pill">@countNew</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-arrow-repeat text-warning me-2"></i> W toku</span>
+                    <span class="badge bg-warning text-dark rounded-pill">@countInProgress</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-check-circle-fill text-success me-2"></i> Zamknięte</span>
+                    <span class="badge bg-success rounded-pill">@countClosed</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="row align-items-md-stretch">
-        <div class="col-md-4">
-            <div class="h-100 p-4 border rounded-3 bg-white shadow-sm">
-                <h2>🚀 Szybkość</h2>
-                <p>System działa w oparciu o Docker i Jenkins, zapewniając błyskawiczne wdrażanie poprawek i stabilność środowiska.</p>
-            </div>
+    @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Nowe', 'W toku', 'Zamknięte'],
+                datasets: [{
+                    // Używamy zmiennych C# przygotowanych na górze pliku
+                    data: [@countNew, @countInProgress, @countClosed],
+                    backgroundColor: ['#0d6efd', '#ffc107', '#198754'], // Kolory Bootstrap (Primary, Warning, Success)
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    </script>
+    }
+}
+else
+{
+                // --- EKRAN DLA NIEZALOGOWANYCH ---
+    <div class="container text-center mt-5 pt-5">
+        <div class="mb-4">
+            <i class="bi bi-building-gear display-1 text-primary"></i>
         </div>
-        <div class="col-md-4">
-            <div class="h-100 p-4 border rounded-3 bg-white shadow-sm">
-                <h2>🔒 Bezpieczeństwo</h2>
-                <p>Pełna izolacja danych użytkowników oraz dedykowany panel dla administratora (widok admin@admin.com).</p>
-            </div>
+        <h1 class="display-4 fw-bold mb-3">Corporate Helpdesk</h1>
+        <p class="lead text-muted mb-5">
+            Profesjonalny system obsługi zgłoszeń dla Twojej firmy.<br />
+            Zaloguj się, aby zarządzać incydentami i śledzić postępy prac.
+        </p>
+
+        <div class="d-flex justify-content-center gap-3">
+            <a class="btn btn-primary btn-lg px-5 shadow-sm" asp-area="Identity" asp-page="/Account/Login">
+                <i class="bi bi-box-arrow-in-right"></i> Zaloguj się
+            </a>
+            <a class="btn btn-outline-secondary btn-lg px-5" asp-area="Identity" asp-page="/Account/Register">
+                <i class="bi bi-person-plus"></i> Zarejestruj konto
+            </a>
         </div>
-        <div class="col-md-4">
-            <div class="h-100 p-4 border rounded-3 bg-white shadow-sm">
-                <h2>💬 Komunikacja</h2>
-                <p>Wbudowany system komentarzy pozwala na płynną wymianę informacji między zgłaszającym a działem IT.</p>
+
+        <div class="row mt-5 pt-5">
+            <div class="col-md-4">
+                <i class="bi bi-speedometer2 fs-1 text-secondary"></i>
+                <h5 class="mt-2">Szybka reakcja</h5>
+                <p class="text-muted small">Śledź statusy zgłoszeń w czasie rzeczywistym.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-shield-check fs-1 text-secondary"></i>
+                <h5 class="mt-2">Bezpieczeństwo</h5>
+                <p class="text-muted small">Zarządzanie rolami i dostępem do danych.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-chat-dots fs-1 text-secondary"></i>
+                <h5 class="mt-2">Komunikacja</h5>
+                <p class="text-muted small">Wbudowany system komentarzy do zgłoszeń.</p>
             </div>
         </div>
     </div>
-</div>
+}

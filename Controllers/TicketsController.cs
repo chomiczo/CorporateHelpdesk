@@ -19,12 +19,14 @@ namespace CorporateHelpdesk.Controllers
     {
         private readonly ITicketService _ticketService; // Tylko serwis!
         private readonly UserManager<IdentityUser> _userManager; // <--- dodanie user managera w celu identyfikacji tożsamości
+        private readonly ApplicationDbContext _context;
 
         // Wstrzyknięcie bazy i managera użytkowników
-        public TicketsController(ITicketService ticketService, UserManager<IdentityUser> userManager)
+        public TicketsController(ITicketService ticketService, UserManager<IdentityUser> userManager, ApplicationDbContext context)
         {
             _ticketService = ticketService;
             _userManager = userManager;
+            _context = context;
         }
 
         // GET: Tickets
@@ -50,8 +52,16 @@ namespace CorporateHelpdesk.Controllers
         // GET: Tickets/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var ticket = await _ticketService.GetTicketDetailsAsync(id);
+            var ticket = await _context.Ticket
+                    .Include(t => t.Comments)
+                        .ThenInclude(c => c.Author) // <--- BEZ TEGO NIE ZOBACZYSZ MAILA AUTORA
+                    .FirstOrDefaultAsync(m => m.Id == id);
             if (ticket == null) return NotFound();
+
+            // Pobieramy ustawienia z bazy
+            var settings = await _context.Settings.FirstOrDefaultAsync() ?? new SystemSettings();
+            ViewBag.EnableComments = settings.EnableComments;
+
             return View(ticket);
         }
 
@@ -63,7 +73,7 @@ namespace CorporateHelpdesk.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description")] Ticket ticket)
+        public async Task<IActionResult> Create([Bind("Title,Description,Priority")] Ticket ticket)
         {
             var userId = _userManager.GetUserId(User);
             await _ticketService.CreateTicketAsync(ticket, userId);
@@ -89,7 +99,7 @@ namespace CorporateHelpdesk.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Status,OwnerId,CreatedAt")] Ticket ticket)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Status,Priority,OwnerId,CreatedAt")] Ticket ticket)
         {
             if (id != ticket.Id) return NotFound();
 

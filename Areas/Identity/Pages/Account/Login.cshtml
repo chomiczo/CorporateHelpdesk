@@ -1,0 +1,76 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Logowanie";
+    // Jeśli chcesz ukryć sidebar na stronie logowania, odkomentuj poniższą linię:
+    // Layout = null;
+    // UWAGA: Jeśli dasz Layout = null, musisz tu ręcznie dodać linki do CSS Bootstrapa,
+    // więc na razie zostawmy to zakomentowane, żeby style działały.
+}
+
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
+
+    <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
+
+        <div class="card shadow-lg border-0 rounded-3">
+
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h3 class="mb-0 fw-bold"><i class="bi bi-box-arrow-in-right me-2"></i> Zaloguj się</h3>
+                <p class="small mb-0 text-white-50">Dostęp do Corporate Helpdesk</p>
+            </div>
+
+            <div class="card-body p-4">
+                <form id="account" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label asp-for="Input.Email" class="text-muted">Adres Email</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.Password" class="text-muted">Hasło</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="checkbox mb-3">
+                        <label asp-for="Input.RememberMe" class="form-label text-muted">
+                            <input class="form-check-input" asp-for="Input.RememberMe" />
+                            Zapamiętaj mnie
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button id="login-submit" type="submit" class="btn btn-primary btn-lg shadow-sm">
+                            Zaloguj się
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a id="forgot-password" asp-page="./ForgotPassword" class="text-decoration-none small text-muted">Zapomniałeś hasła?</a>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="small mb-2 text-muted">Nie masz jeszcze konta?</p>
+                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-outline-secondary btn-sm w-50">
+                            Zarejestruj się
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="text-center mt-4 text-muted small">
+            &copy; 2026 Corporate Helpdesk. Wszelkie prawa zastrzeżone.
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

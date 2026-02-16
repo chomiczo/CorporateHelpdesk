@@ -27,5 +27,8 @@ namespace CorporateHelpdesk.Models
         public IdentityUser? Owner { get; set; }
 
         public List<Comment> Comments { get; set; } = new List<Comment>();
+
+        [Required]
+        public string Priority { get; set; } = "Średni"; // Niski, Średni, Wysoki
     }
 }
