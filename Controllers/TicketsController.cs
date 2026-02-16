@@ -10,109 +10,77 @@ using CorporateHelpdesk.Models;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using CorporateHelpdesk.Interfaces;
 
 namespace CorporateHelpdesk.Controllers
 {
     [Authorize] // tylko zalogowani widzą ten kontroler
     public class TicketsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ITicketService _ticketService; // Tylko serwis!
         private readonly UserManager<IdentityUser> _userManager; // <--- dodanie user managera w celu identyfikacji tożsamości
 
         // Wstrzyknięcie bazy i managera użytkowników
-        public TicketsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public TicketsController(ITicketService ticketService, UserManager<IdentityUser> userManager)
         {
-            _context = context;
+            _ticketService = ticketService;
             _userManager = userManager;
         }
 
         // GET: Tickets
         public async Task<IActionResult> Index()
         {
-            // 1. Pobieramy aktualnie zalogowanego użytkownika
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
 
-            if (user == null)
+            // Jeśli jakimś cudem userId jest nullem, nie puszczamy tego dalej
+            if (string.IsNullOrEmpty(userId))
             {
-                return Challenge(); // Jeśli niezalogowany, wykop do logowania
+                return Challenge();
             }
 
-            // 2. Sprawdzamy, czy to Admin (PROSTY SPOSÓB: po mailu)
-            // Wpisz tu SWÓJ email, którego używasz do testów!
-            if (user.Email == "admin@admin.com")
+            if (User.IsInRole("Admin"))
             {
-                // Admin widzi WSZYSTKIE zgłoszenia
-                var allTickets = await _context.Ticket.ToListAsync();
-                return View(allTickets);
+                return View(await _ticketService.GetAllTicketsAsync());
             }
-            else
-            {
-                // Zwykły user widzi TYLKO SWOJE (filtrujemy po OwnerId)
-                var myTickets = await _context.Ticket
-                    .Where(t => t.OwnerId == user.Id)
-                    .ToListAsync();
-                return View(myTickets);
-            }
+
+            // Teraz userId na pewno nie jest nullem, więc ostrzeżenie CS8604 zniknie
+            return View(await _ticketService.GetUserTicketsAsync(userId));
         }
 
         // GET: Tickets/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null) return NotFound();
-
-            // .Include, żeby pobrać zgłoszenie RAZEM z jego komentarzami i ich autorami
-            var ticket = await _context.Ticket
-                .Include(t => t.Comments)
-                    .ThenInclude(c => c.Author)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
+            var ticket = await _ticketService.GetTicketDetailsAsync(id);
             if (ticket == null) return NotFound();
-
             return View(ticket);
         }
 
         // GET: Tickets/Create
-        public IActionResult Create()
-        {
-            ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id");
-            return View();
-        }
+        public IActionResult Create() => View();
 
         // POST: Tickets/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,CreatedAt,Status,OwnerId")] Ticket ticket)
+        public async Task<IActionResult> Create([Bind("Title,Description")] Ticket ticket)
         {
-            // 1. Pobierz ID aktualnie zalogowanego użytkownika
-            var user = await _userManager.GetUserAsync(User);
-
-            // 2. Ustaw brakujące dane automatycznie
-            ticket.OwnerId = user.Id;           // Przypisz autora
-            ticket.CreatedAt = DateTime.Now;    // Ustaw datę na "teraz"
-            ticket.Status = "Nowe";             // Domyślny status
-
-            // 3. Zapisz w bazie 
-            _context.Add(ticket);
-            await _context.SaveChangesAsync();
+            var userId = _userManager.GetUserId(User);
+            await _ticketService.CreateTicketAsync(ticket, userId);
+            TempData["Success"] = "Zgłoszenie zostało utworzone pomyślnie!";
             return RedirectToAction(nameof(Index));
         }
 
         // GET: Tickets/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var ticket = await _ticketService.GetTicketDetailsAsync(id);
+            if (ticket == null) return NotFound();
 
-            var ticket = await _context.Ticket.FindAsync(id);
-            if (ticket == null)
-            {
-                return NotFound();
-            }
-            ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id", ticket.OwnerId);
+            // Zabezpieczenie: Tylko właściciel lub Admin może edytować
+            var userId = _userManager.GetUserId(User);
+            if (ticket.OwnerId != userId && !User.IsInRole("Admin")) return Forbid();
+
             return View(ticket);
         }
 
@@ -121,53 +89,31 @@ namespace CorporateHelpdesk.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,CreatedAt,Status,OwnerId")] Ticket ticket)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Status,OwnerId,CreatedAt")] Ticket ticket)
         {
-            if (id != ticket.Id)
-            {
-                return NotFound();
-            }
+            if (id != ticket.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(ticket);
-                    await _context.SaveChangesAsync();
+                    await _ticketService.UpdateTicketAsync(ticket);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TicketExists(ticket.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!await _ticketService.TicketExistsAsync(ticket.Id)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id", ticket.OwnerId);
             return View(ticket);
         }
 
         // GET: Tickets/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ticket = await _context.Ticket
-                .Include(t => t.Owner)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ticket == null)
-            {
-                return NotFound();
-            }
-
+            var ticket = await _ticketService.GetTicketDetailsAsync(id);
+            if (ticket == null) return NotFound();
             return View(ticket);
         }
 
@@ -176,51 +122,28 @@ namespace CorporateHelpdesk.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var ticket = await _context.Ticket.FindAsync(id);
-            if (ticket != null)
-            {
-                _context.Ticket.Remove(ticket);
-            }
-
-            await _context.SaveChangesAsync();
+            await _ticketService.DeleteTicketAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool TicketExists(int id)
+        private async Task<bool> TicketExists(int id)
         {
-            return _context.Ticket.Any(e => e.Id == id);
+            return await _ticketService.TicketExistsAsync(id);
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")] // To zabezpiecza metodę na poziomie serwera!
         public async Task<IActionResult> ChangeStatus(int id, string newStatus)
         {
-            var ticket = await _context.Ticket.FindAsync(id);
-            if (ticket != null)
-            {
-                ticket.Status = newStatus;
-                await _context.SaveChangesAsync();
-            }
+            await _ticketService.ChangeStatusAsync(id, newStatus);
             return RedirectToAction(nameof(Details), new { id = id });
         }
 
         [HttpPost]
         public async Task<IActionResult> AddComment(int ticketId, string commentText)
         {
-            if (!string.IsNullOrEmpty(commentText))
-            {
-                var user = await _userManager.GetUserAsync(User);
-                var comment = new Comment
-                {
-                    TicketId = ticketId,
-                    Text = commentText,
-                    AuthorId = user.Id,
-                    CreatedAt = DateTime.Now
-                };
-
-                _context.Comments.Add(comment);
-                await _context.SaveChangesAsync();
-            }
-
+            var userId = _userManager.GetUserId(User);
+            await _ticketService.AddCommentAsync(ticketId, commentText, userId);
             return RedirectToAction("Details", new { id = ticketId });
         }
     }

@@ -1,4 +1,6 @@
 using CorporateHelpdesk.Data;
+using CorporateHelpdesk.Interfaces;
+using CorporateHelpdesk.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,9 +12,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<ITicketService, TicketService>(); //rejestracja service
 
 var app = builder.Build();
 
@@ -58,6 +64,11 @@ using (var scope = app.Services.CreateScope())
     {
         Console.WriteLine($"--> B³¹d migracji: {ex.Message}");
     }
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    await DbInitializer.SeedRolesAndAdminAsync(scope.ServiceProvider);
 }
 
 app.Run();

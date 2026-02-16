@@ -14,7 +14,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <table class="table table-hover align-middle">
+            <table class="table" id="ticketsTable">
                 <thead class="table-light">
                     <tr>
                         <th>Temat</th>
@@ -30,7 +30,9 @@
                             <td style="font-weight: 500;">
                                 @Html.DisplayFor(modelItem => item.Title)
                                 <br />
-                                <small class="text-muted">@item.Description.Substring(0, Math.Min(item.Description.Length, 50))...</small>
+                                <small class="text-muted">
+                                    @(string.IsNullOrEmpty(item.Description) ? "" : (item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description))
+                                </small>
                             </td>
                             <td>
                                 @item.CreatedAt.ToString("yyyy-MM-dd HH:mm")
@@ -61,3 +63,18 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#ticketsTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/pl.json'
+                }
+            });
+        });
+    </script>
+}
