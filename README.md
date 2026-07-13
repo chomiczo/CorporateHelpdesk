@@ -2,9 +2,6 @@
 
 > Kompleksowa aplikacja webowa do zarządzania zgłoszeniami wsparcia IT i incydentami w środowisku korporacyjnym, która jeszcze jest/będzie w trakcie rozwoju.
 
-<!-- W TYM MIEJSCU WKLEJ WYGENEROWANY KOD ZDJĘCIA Z METODY "ISSUES", O KTÓREJ ROZMAWIALIŚMY -->
-![Podgląd Dashboardu](https://via.placeholder.com/900x450?text=Wklej+tutaj+swoj+zrzut+ekranu)
-
 ## 📖 O projekcie
 
 Corporate Helpdesk to autorskie rozwiązanie oparte na wzorcu MVC, zaprojektowane w celu usprawnienia procesu zgłaszania i rozwiązywania problemów technicznych w organizacji. Umożliwia pracownikom łatwe tworzenie zgłoszeń (ticketów), a zespołowi IT dostarcza przejrzysty panel (dashboard) do zarządzania, śledzenia i analizowania incydentów w czasie rzeczywistym. 
