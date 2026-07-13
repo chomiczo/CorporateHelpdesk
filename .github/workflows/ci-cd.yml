@@ -1,0 +1,30 @@
+name: .NET Core CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    name: Build and Test Application
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore NuGet packages
+      run: dotnet restore CorporateHelpdesk.sln
+
+    - name: Build project
+      run: dotnet build CorporateHelpdesk.sln --configuration Release --no-restore
+
+    - name: Run Unit Tests
+      run: dotnet test CorporateHelpdesk.sln --configuration Release --no-build --verbosity normal
